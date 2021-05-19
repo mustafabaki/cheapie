@@ -202,7 +202,7 @@ class _firstScreenState extends State<firstScreen> {
 
                 if (list.isEmpty == false) {
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => homepage()));
+                      MaterialPageRoute(builder: (context) => screen()));
                 }
               },
               child: Text("LOGIN"),
@@ -287,48 +287,103 @@ class _signupState extends State<signup> {
   }
 }
 
-class homepage extends StatefulWidget {
+class screen extends StatefulWidget {
   @override
-  _homepageState createState() => _homepageState();
+  _screenState createState() => _screenState();
 }
 
-class _homepageState extends State<homepage> {
+class _screenState extends State<screen> {
+  int currentIndex = 0;
+  final List<Widget> screens = [home(), categories(), shops(), profile()];
   TextEditingController search = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Home Page"),
-        backgroundColor: Colors.redAccent,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: 0, // this will be set when a new tab is tapped
-        items: [
-          BottomNavigationBarItem(
-            icon: new Icon(Icons.home),
-            title: new Text('Home'),
-          ),
-          BottomNavigationBarItem(
-            icon: new Icon(Icons.category_outlined),
-            title: new Text('Categories'),
-          ),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.local_mall), title: Text('Shops')),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person), title: Text('Profile'))
-        ],
-      ),
-      body: Column(
-        children: [
-          TextFormField(
-              controller: search,
-              decoration: InputDecoration(
-                  icon: Icon(Icons.search),
-                  border: UnderlineInputBorder(),
-                  labelText: 'Search a product here...')),
-        ],
-      ),
+        appBar: AppBar(
+          title: Text("Cheapie"),
+          backgroundColor: Colors.redAccent,
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: 0, // this will be set when a new tab is tapped
+          onTap: onTabTapped,
+          items: [
+            BottomNavigationBarItem(
+              icon: new Icon(Icons.home),
+              title: new Text('Home'),
+            ),
+            BottomNavigationBarItem(
+              icon: new Icon(Icons.category_outlined),
+              title: new Text('Categories'),
+            ),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.local_mall), title: Text('Shops')),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.person), title: Text('Profile'))
+          ],
+        ),
+        body: screens[currentIndex]);
+  }
+
+  void onTabTapped(int index) {
+    setState(() {
+      currentIndex = index;
+    });
+  }
+}
+
+class home extends StatefulWidget {
+  @override
+  _homeState createState() => _homeState();
+}
+
+class _homeState extends State<home> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Text("home"),
+    );
+  }
+}
+
+class categories extends StatefulWidget {
+  @override
+  _categoriesState createState() => _categoriesState();
+}
+
+class _categoriesState extends State<categories> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Text("category"),
+    );
+  }
+}
+
+class shops extends StatefulWidget {
+  @override
+  _shopsState createState() => _shopsState();
+}
+
+class _shopsState extends State<shops> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Text("shops"),
+    );
+  }
+}
+
+class profile extends StatefulWidget {
+  @override
+  _profileState createState() => _profileState();
+}
+
+class _profileState extends State<profile> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Text("profile"),
     );
   }
 }
