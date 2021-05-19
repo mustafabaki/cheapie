@@ -359,27 +359,40 @@ class _homeState extends State<home> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 200,
-                  childAspectRatio: 3 / 2,
-                  crossAxisSpacing: 20,
-                  mainAxisSpacing: 20),
-              itemCount: products.length,
-              itemBuilder: (BuildContext ctx, index) {
-                return Container(
-                  alignment: Alignment.center,
-                  child: Text(products[index]["name"]),
-                  decoration: BoxDecoration(
-                      color: Colors.amber,
-                      borderRadius: BorderRadius.circular(15)),
-                );
-              }),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: GridView.builder(
+          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 200,
+              childAspectRatio: 3 / 2,
+              crossAxisSpacing: 20,
+              mainAxisSpacing: 20),
+          itemCount: products.length,
+          itemBuilder: (BuildContext ctx, index) {
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => detailpage(
+                              name: products[index]["name"],
+                              pic: products[index]["url"],
+                              rate: products[index]["rate"],
+                            )));
+              },
+              child: Container(
+                alignment: Alignment.bottomCenter,
+                child: Text(products[index]["name"]),
+                decoration: BoxDecoration(
+                  color: Colors.black38,
+                  borderRadius: BorderRadius.circular(15),
+                  image: DecorationImage(
+                      image: NetworkImage(products[index]['url']),
+                      fit: BoxFit.fitWidth),
+                ),
+              ),
+            );
+          }),
     );
   }
 }
@@ -422,6 +435,32 @@ class _profileState extends State<profile> {
   Widget build(BuildContext context) {
     return Column(
       children: [Text("data")],
+    );
+  }
+}
+
+class detailpage extends StatefulWidget {
+  String name;
+  String pic;
+  int rate;
+  detailpage({this.name, this.pic, this.rate});
+  @override
+  _detailpageState createState() => _detailpageState();
+}
+
+class _detailpageState extends State<detailpage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Details of ${widget.name}"),
+        backgroundColor: Colors.redAccent,
+      ),
+      body: Column(
+        children: [
+          Image(image: NetworkImage(widget.pic)),
+        ],
+      ),
     );
   }
 }
