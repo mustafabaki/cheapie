@@ -27,7 +27,7 @@ void main() async {
 
     // add another table here......
     await db.execute(""" CREATE TABLE IF NOT EXISTS `address` (
-  `address_id` INT NOT NULL,
+  `address_id` INT AUTO_INCREMENT,
   `street` VARCHAR(45) NOT NULL,
   `country` VARCHAR(45) NOT NULL,
   `postal_code` INT NOT NULL,
@@ -53,15 +53,15 @@ void main() async {
     ON DELETE NO ACTION
     ON UPDATE NO ACTION) """);
     await db.execute(""" CREATE TABLE IF NOT EXISTS  `category` (
-  `category_id` INT NOT NULL,
+  `category_id` INT AUTO_INCREMENT,
   `category_name` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`category_id`)) """);
     await db.execute(""" CREATE TABLE IF NOT EXISTS  `seller` (
-  `seller_id` INT NOT NULL,
+  `seller_id` INT AUTO_INCREMENT,
   `seller_name` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`seller_id`)) """);
     await db.execute(""" CREATE TABLE IF NOT EXISTS  `product` (
-  `product_id` INT NOT NULL,
+  `product_id` INT AUTO_INCREMENT,
   `product_rate` INT NOT NULL,
   `name` VARCHAR(45) NOT NULL,
   `total_amount` INT NOT NULL,
@@ -69,6 +69,7 @@ void main() async {
   `brand` VARCHAR(45) NOT NULL,
   `category_id` INT NOT NULL,
   `seller_id` INT NOT NULL,
+  `url` TEXT,
   PRIMARY KEY (`product_id`),
   
   CONSTRAINT `fk_product_category1`
@@ -114,7 +115,7 @@ void main() async {
     ON DELETE NO ACTION
     ON UPDATE NO ACTION) """);
     await db.execute(""" CREATE TABLE IF NOT EXISTS  `shops` (
-  `shop_id` INT NOT NULL,
+  `shop_id` INT AUTO_INCREMENT,
   `shop_name` VARCHAR(45) NOT NULL,
   `seller_id` INT NOT NULL,
   `address_id` INT NOT NULL,
@@ -156,6 +157,9 @@ void main() async {
 
   await db.execute(
       """ insert into user (email,phone,username,password,gender,address_id)  values("m@gmail.com",12345, "user1", "12345", "male",1) """);
+
+  await db.rawInsert(
+      """ insert into product (product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(4, "Lenovo Laptop", 12345, 12000, "Lenovo", 1, 1,"https://www.lenovo.com/medias/lenovo-laptop-ideapad-3-15-intel-gallery-1.png?context=bWFzdGVyfHJvb3R8MjIxNjM1fGltYWdlL3BuZ3xoMjIvaDkyLzEwNzU3MjQzOTI4NjA2LnBuZ3xhMjhmOWI5NmQ1ODE2YzIyN2RjZjg0YjU1MTIzYzAyNzY2Y2I3MTU4ZTAyNWI1MjQ5OTY4ZTFjMjBmMzYyNWI4")  """);
 }
 
 class firstScreen extends StatefulWidget {
@@ -254,29 +258,32 @@ class _signupState extends State<signup> {
                   border: UnderlineInputBorder(),
                   labelText: 'Enter your username')),
           TextFormField(
-              controller: username,
+              controller: email,
               decoration: InputDecoration(
                   border: UnderlineInputBorder(),
                   labelText: 'Enter your email')),
           TextFormField(
-              controller: username,
+              controller: password,
               decoration: InputDecoration(
                   border: UnderlineInputBorder(),
                   labelText: 'Enter your password')),
           TextFormField(
-              controller: username,
+              controller: gender,
               decoration: InputDecoration(
                   border: UnderlineInputBorder(),
                   labelText: 'Enter your gender')),
           TextFormField(
-              controller: username,
+              controller: phone,
               decoration: InputDecoration(
                   border: UnderlineInputBorder(),
                   labelText: 'Enter your phone')),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: FlatButton(
-              onPressed: () {},
+              onPressed: () async {
+                await db.rawInsert(
+                    """ insert into user (username, email,password,gender,phone, address_id) values ("${username.text}","${email.text}", "${password.text}", "${gender.text}", ${phone.text},2) """);
+              },
               child: Text('SIGN UP'),
               color: Colors.redAccent,
             ),
@@ -338,10 +345,41 @@ class home extends StatefulWidget {
 }
 
 class _homeState extends State<home> {
+  List<Map> products = [];
+  getproducts() async {
+    products = await db.rawQuery("""select * from product""");
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getproducts();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Text("home"),
+    return Column(
+      children: [
+        Container(
+          child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 200,
+                  childAspectRatio: 3 / 2,
+                  crossAxisSpacing: 20,
+                  mainAxisSpacing: 20),
+              itemCount: products.length,
+              itemBuilder: (BuildContext ctx, index) {
+                return Container(
+                  alignment: Alignment.center,
+                  child: Text(products[index]["name"]),
+                  decoration: BoxDecoration(
+                      color: Colors.amber,
+                      borderRadius: BorderRadius.circular(15)),
+                );
+              }),
+        ),
+      ],
     );
   }
 }
@@ -354,8 +392,8 @@ class categories extends StatefulWidget {
 class _categoriesState extends State<categories> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Text("category"),
+    return Column(
+      children: [Text("hello")],
     );
   }
 }
@@ -368,8 +406,8 @@ class shops extends StatefulWidget {
 class _shopsState extends State<shops> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Text("shops"),
+    return Column(
+      children: [Text("data")],
     );
   }
 }
@@ -382,8 +420,8 @@ class profile extends StatefulWidget {
 class _profileState extends State<profile> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Text("profile"),
+    return Column(
+      children: [Text("data")],
     );
   }
 }
