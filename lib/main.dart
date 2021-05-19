@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 Database db;
 
@@ -375,10 +376,10 @@ class _homeState extends State<home> {
                     context,
                     MaterialPageRoute(
                         builder: (context) => detailpage(
-                              name: products[index]["name"],
-                              pic: products[index]["url"],
-                              rate: products[index]["rate"],
-                            )));
+                            name: products[index]["name"],
+                            pic: products[index]["url"],
+                            rate: products[index]["product_rate"],
+                            id: products[index]["product_id"])));
               },
               child: Container(
                 alignment: Alignment.bottomCenter,
@@ -440,10 +441,11 @@ class _profileState extends State<profile> {
 }
 
 class detailpage extends StatefulWidget {
+  int id;
   String name;
   String pic;
   int rate;
-  detailpage({this.name, this.pic, this.rate});
+  detailpage({this.name, this.pic, this.rate, this.id});
   @override
   _detailpageState createState() => _detailpageState();
 }
@@ -459,6 +461,25 @@ class _detailpageState extends State<detailpage> {
       body: Column(
         children: [
           Image(image: NetworkImage(widget.pic)),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text("Rating of the product: ",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          ),
+          RatingBar.builder(
+              initialRating: widget.rate.toDouble(),
+              minRating: 1,
+              direction: Axis.horizontal,
+              allowHalfRating: true,
+              itemCount: 5,
+              itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+              itemBuilder: (context, _) => Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                  ),
+              onRatingUpdate: (rating) {
+                print(rating);
+              }),
         ],
       ),
     );
