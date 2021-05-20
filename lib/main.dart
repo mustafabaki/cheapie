@@ -5,6 +5,7 @@ import 'package:path/path.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 Database db;
+int user_id;
 
 void main() async {
   runApp(MaterialApp(
@@ -157,10 +158,10 @@ void main() async {
   print(tableNames);
 
   await db.execute(
-      """ insert into user (email,phone,username,password,gender,address_id)  values("m@gmail.com",12345, "user1", "12345", "male",1) """);
+      """ insert into user (email,phone,username,password,gender,address_id,user_id)  values("m@gmail.com",12345, "user1", "12345", "male",1,1) """);
 
   await db.rawInsert(
-      """ insert into product (product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(4, "Lenovo Laptop", 12345, 12000, "Lenovo", 1, 1,"https://www.lenovo.com/medias/lenovo-laptop-ideapad-3-15-intel-gallery-1.png?context=bWFzdGVyfHJvb3R8MjIxNjM1fGltYWdlL3BuZ3xoMjIvaDkyLzEwNzU3MjQzOTI4NjA2LnBuZ3xhMjhmOWI5NmQ1ODE2YzIyN2RjZjg0YjU1MTIzYzAyNzY2Y2I3MTU4ZTAyNWI1MjQ5OTY4ZTFjMjBmMzYyNWI4")  """);
+      """ insert into product (product_id,product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(1,4, "Lenovo Laptop", 12345, 12000, "Lenovo", 1, 1,"https://www.lenovo.com/medias/lenovo-laptop-ideapad-3-15-intel-gallery-1.png?context=bWFzdGVyfHJvb3R8MjIxNjM1fGltYWdlL3BuZ3xoMjIvaDkyLzEwNzU3MjQzOTI4NjA2LnBuZ3xhMjhmOWI5NmQ1ODE2YzIyN2RjZjg0YjU1MTIzYzAyNzY2Y2I3MTU4ZTAyNWI1MjQ5OTY4ZTFjMjBmMzYyNWI4")  """);
 }
 
 class firstScreen extends StatefulWidget {
@@ -206,6 +207,7 @@ class _firstScreenState extends State<firstScreen> {
                     'SELECT * FROM user where username = "$usrname" and password = "$passwordd"');
 
                 if (list.isEmpty == false) {
+                  user_id = list[0]['user_id'];
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => screen()));
                 }
@@ -283,7 +285,7 @@ class _signupState extends State<signup> {
             child: FlatButton(
               onPressed: () async {
                 await db.rawInsert(
-                    """ insert into user (username, email,password,gender,phone, address_id) values ("${username.text}","${email.text}", "${password.text}", "${gender.text}", ${phone.text},2) """);
+                    """ insert into user (username, email,password,gender,phone, address_id,user_id) values ("${username.text}","${email.text}", "${password.text}", "${gender.text}", ${phone.text},2,2) """);
               },
               child: Text('SIGN UP'),
               color: Colors.redAccent,
@@ -313,8 +315,11 @@ class _screenState extends State<screen> {
         ),
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
-          currentIndex: 0, // this will be set when a new tab is tapped
-          onTap: onTabTapped,
+          currentIndex:
+              currentIndex, // this will be set when a new tab is tapped
+          onTap: (index) {
+            onTabTapped(index);
+          },
           items: [
             BottomNavigationBarItem(
               icon: new Icon(Icons.home),
@@ -349,6 +354,7 @@ class _homeState extends State<home> {
   List<Map> products = [];
   getproducts() async {
     products = await db.rawQuery("""select * from product""");
+    return products;
   }
 
   @override
@@ -360,41 +366,54 @@ class _homeState extends State<home> {
 
   @override
   Widget build(BuildContext context) {
+    getproducts();
     return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: GridView.builder(
-          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 200,
-              childAspectRatio: 3 / 2,
-              crossAxisSpacing: 20,
-              mainAxisSpacing: 20),
-          itemCount: products.length,
-          itemBuilder: (BuildContext ctx, index) {
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => detailpage(
-                            name: products[index]["name"],
-                            pic: products[index]["url"],
-                            rate: products[index]["product_rate"],
-                            id: products[index]["product_id"])));
-              },
-              child: Container(
-                alignment: Alignment.bottomCenter,
-                child: Text(products[index]["name"]),
-                decoration: BoxDecoration(
-                  color: Colors.black38,
-                  borderRadius: BorderRadius.circular(15),
-                  image: DecorationImage(
-                      image: NetworkImage(products[index]['url']),
-                      fit: BoxFit.fitWidth),
-                ),
-              ),
-            );
-          }),
-    );
+        padding: const EdgeInsets.all(8.0),
+        child: FutureBuilder(
+            future: getproducts(),
+            builder: (context, projectSnap) {
+              if (projectSnap.connectionState == ConnectionState.none &&
+                  projectSnap.hasData == null) {
+                //print('project snapshot data is: ${projectSnap.data}');
+                return Container();
+              }
+              return GridView.builder(
+                  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 200,
+                      childAspectRatio: 3 / 2,
+                      crossAxisSpacing: 20,
+                      mainAxisSpacing: 20),
+                  itemCount: products.length,
+                  itemBuilder: (BuildContext ctx, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => detailpage(
+                                      name: projectSnap.data[index]["name"],
+                                      pic: projectSnap.data[index]["url"],
+                                      rate: projectSnap.data[index]
+                                          ["product_rate"],
+                                      id: projectSnap.data[index]["product_id"],
+                                      price: projectSnap.data[index]["price"],
+                                    )));
+                      },
+                      child: Container(
+                        alignment: Alignment.bottomCenter,
+                        child: Text(projectSnap.data[index]["name"]),
+                        decoration: BoxDecoration(
+                          color: Colors.black38,
+                          borderRadius: BorderRadius.circular(15),
+                          image: DecorationImage(
+                              image:
+                                  NetworkImage(projectSnap.data[index]['url']),
+                              fit: BoxFit.fitWidth),
+                        ),
+                      ),
+                    );
+                  });
+            }));
   }
 }
 
@@ -445,12 +464,31 @@ class detailpage extends StatefulWidget {
   String name;
   String pic;
   int rate;
-  detailpage({this.name, this.pic, this.rate, this.id});
+  int price;
+  detailpage({this.name, this.pic, this.rate, this.id, this.price});
   @override
   _detailpageState createState() => _detailpageState();
 }
 
 class _detailpageState extends State<detailpage> {
+  List<Map> comments = [];
+  TextEditingController comment = TextEditingController();
+
+  getComments() async {
+    comments = await db.rawQuery(
+        """ select * from comment where product_id = ${widget.id} and user_id = $user_id """);
+    print("user idd : " + user_id.toString());
+    print("product id : " + widget.id.toString());
+    return comments;
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getComments();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -480,6 +518,47 @@ class _detailpageState extends State<detailpage> {
               onRatingUpdate: (rating) {
                 print(rating);
               }),
+          Text(
+            "Price: ${widget.price}",
+            style: TextStyle(fontSize: 20),
+          ),
+          FutureBuilder(
+              future: getComments(),
+              builder: (context, projectSnap) {
+                if (projectSnap.connectionState == ConnectionState.none &&
+                    projectSnap.hasData == null) {
+                  //print('project snapshot data is: ${projectSnap.data}');
+                  return Container();
+                }
+                return Container(
+                  height: 200,
+                  child: ListView.builder(
+                      itemCount: projectSnap.data.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ListTile(
+                              leading: Icon(Icons.comment),
+                              title: Text("User ${user_id} has said:"),
+                              subtitle:
+                                  Text(projectSnap.data[index]["comment"]),
+                              tileColor: Colors.red.shade100),
+                        );
+                      }),
+                );
+              }),
+          TextFormField(
+            controller: comment,
+            decoration: InputDecoration(
+                border: UnderlineInputBorder(),
+                labelText: 'You can add your comment here'),
+          ),
+          FlatButton(
+              onPressed: () async {
+                await db.rawInsert(
+                    """ insert into comment (comment, user_id,product_id) values ("${comment.text}",$user_id, ${widget.id}) """);
+              },
+              child: Text("Add Your Comment"))
         ],
       ),
     );
