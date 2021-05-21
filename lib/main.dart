@@ -9,6 +9,7 @@ int user_id;
 
 void main() async {
   runApp(MaterialApp(
+    debugShowCheckedModeBanner: true,
     home: firstScreen(),
   ));
 
@@ -162,6 +163,36 @@ void main() async {
 
   await db.rawInsert(
       """ insert into product (product_id,product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(1,4, "Lenovo Laptop", 12345, 12000, "Lenovo", 1, 1,"https://www.lenovo.com/medias/lenovo-laptop-ideapad-3-15-intel-gallery-1.png?context=bWFzdGVyfHJvb3R8MjIxNjM1fGltYWdlL3BuZ3xoMjIvaDkyLzEwNzU3MjQzOTI4NjA2LnBuZ3xhMjhmOWI5NmQ1ODE2YzIyN2RjZjg0YjU1MTIzYzAyNzY2Y2I3MTU4ZTAyNWI1MjQ5OTY4ZTFjMjBmMzYyNWI4")  """);
+
+  await db.rawInsert(
+      """ insert into product (product_id,product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(2,5, "Huawei Laptop", 1000, 9000, "Huawei", 1, 2,"https://consumer.huawei.com/content/dam/huawei-cbg-site/common/mkt/pdp/pc/matebook-x-pro-2020/img/pc/huawei-matebook-x-pro-pc.jpg")  """);
+
+  await db.rawInsert(
+      """ insert into product (product_id,product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(3,2, "Samsung Laptop", 1000, 9000, "Samsung", 1, 1,"https://images-na.ssl-images-amazon.com/images/I/819QD8%2BXiFL._AC_SX450_.jpg")  """);
+
+  await db.rawInsert(
+      """ insert into product (product_id,product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(4,4, "Samsung Refrigerator", 500, 3500, "Samsung", 2, 2,"https://5.imimg.com/data5/FB/NX/MY-43601360/samsung-refrigerator-500x500.jpg")  """);
+
+  await db.rawInsert(
+      """ insert into product (product_id,product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(5,5, "Samsung Washing Machine", 500, 4100, "Samsung", 2, 1,"https://media.croma.com/image/upload/v1615902435/Croma%20Assets/Large%20Appliances/Washers%20and%20Dryers/Images/233541_fgxmdm.png")  """);
+
+  await db.rawInsert(
+      """ insert into product (product_id,product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(6,2, "Bosch Vacuum Cleaner", 500, 2100, "Bosch", 2, 2,"https://cdn11.bigcommerce.com/s-r173ig0mpx/images/stencil/1280x1280/products/235/512/Bosch-Vacuum-Cleaner-Bagged-Steel-2400-Watt-242005081646-100084-R-01__65598.1617541023.jpg?c=1")  """);
+
+  await db.rawInsert(
+      """ insert into address (address_id,street,postal_code,country) values (1, "Kurtulus Sokak", 38000, "Turkey") """);
+
+  await db.rawInsert(
+      """ insert into category (category_id,category_name) values (1, "Computers")  """);
+
+  await db.rawInsert(
+      """ insert into category (category_id,category_name) values (2, "Home Technologies")  """);
+
+  await db.rawInsert(
+      """ insert into shops (shop_id,shop_name,seller_id,address_id) values (1,"Teknosa", 1,1) """);
+
+  await db.rawInsert(
+      """ insert into shops (shop_id,shop_name,seller_id,address_id) values (2,"Media Markt", 2,1) """);
 }
 
 class firstScreen extends StatefulWidget {
@@ -305,12 +336,16 @@ class screen extends StatefulWidget {
 class _screenState extends State<screen> {
   int currentIndex = 0;
   final List<Widget> screens = [home(), categories(), shops(), profile()];
-  TextEditingController search = TextEditingController();
+  TextEditingController _searchQueryController = TextEditingController();
+  bool _isSearching = false;
+  String searchQuery = "Search query";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           title: Text("Cheapie"),
+          leading: _isSearching ? const BackButton() : Container(),
           backgroundColor: Colors.redAccent,
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -366,6 +401,7 @@ class _homeState extends State<home> {
 
   @override
   Widget build(BuildContext context) {
+    TextEditingController search = TextEditingController();
     getproducts();
     return Padding(
         padding: const EdgeInsets.all(8.0),
@@ -377,6 +413,7 @@ class _homeState extends State<home> {
                 //print('project snapshot data is: ${projectSnap.data}');
                 return Container();
               }
+
               return GridView.builder(
                   gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                       maxCrossAxisExtent: 200,
@@ -423,11 +460,32 @@ class categories extends StatefulWidget {
 }
 
 class _categoriesState extends State<categories> {
+  getcategory() async {
+    return await db.rawQuery(""" select * from category""");
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [Text("hello")],
-    );
+    return FutureBuilder(
+        future: getcategory(),
+        builder: (context, projectSnap) {
+          if (projectSnap.connectionState == ConnectionState.none &&
+              projectSnap.hasData == null) {
+            //print('project snapshot data is: ${projectSnap.data}');
+            return Container();
+          }
+          return ListView.builder(
+              itemCount: projectSnap.data.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ListTile(
+                    tileColor: Colors.red.shade100,
+                    title: Text(projectSnap.data[index]['category_name']),
+                  ),
+                );
+              });
+        });
   }
 }
 
@@ -437,11 +495,36 @@ class shops extends StatefulWidget {
 }
 
 class _shopsState extends State<shops> {
+  getcategory() async {
+    return await db.rawQuery(""" select * from category""");
+  }
+
+  getshops() async {
+    return await db.rawQuery(""" select * from shops""");
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [Text("data")],
-    );
+    return FutureBuilder(
+        future: getshops(),
+        builder: (context, projectSnap) {
+          if (projectSnap.connectionState == ConnectionState.none &&
+              projectSnap.hasData == null) {
+            //print('project snapshot data is: ${projectSnap.data}');
+            return Container();
+          }
+          return ListView.builder(
+              itemCount: projectSnap.data.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ListTile(
+                    tileColor: Colors.red.shade100,
+                    title: Text(projectSnap.data[index]['shop_name']),
+                  ),
+                );
+              });
+        });
   }
 }
 
@@ -451,11 +534,49 @@ class profile extends StatefulWidget {
 }
 
 class _profileState extends State<profile> {
+  getDetails() async {
+    List<Map> list = await db.rawQuery(
+        """ select * from user, address where user_id = ${user_id}  """);
+
+    return list;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [Text("data")],
-    );
+    getDetails();
+    return FutureBuilder(
+        future: getDetails(),
+        builder: (context, projectSnap) {
+          if (projectSnap.connectionState == ConnectionState.none &&
+              projectSnap.hasData == null) {
+            //print('project snapshot data is: ${projectSnap.data}');
+            return CircularProgressIndicator();
+          }
+          return Column(
+            children: [
+              ListTile(
+                title: Text("User Name"),
+                subtitle: Text(projectSnap.data[0]["username"]),
+              ),
+              ListTile(
+                title: Text("Email"),
+                subtitle: Text(projectSnap.data[0]["email"]),
+              ),
+              ListTile(
+                title: Text("Phone Number"),
+                subtitle: Text(projectSnap.data[0]["phone"]),
+              ),
+              ListTile(
+                title: Text("Country"),
+                subtitle: Text(projectSnap.data[0]["country"]),
+              ),
+              ListTile(
+                title: Text("Postal Code"),
+                subtitle: Text(projectSnap.data[0]["postal_code"].toString()),
+              ),
+            ],
+          );
+        });
   }
 }
 
@@ -496,7 +617,7 @@ class _detailpageState extends State<detailpage> {
         title: Text("Details of ${widget.name}"),
         backgroundColor: Colors.redAccent,
       ),
-      body: Column(
+      body: ListView(
         children: [
           Image(image: NetworkImage(widget.pic)),
           Padding(
@@ -562,5 +683,20 @@ class _detailpageState extends State<detailpage> {
         ],
       ),
     );
+  }
+}
+
+// for search page...
+
+class searchpage extends StatefulWidget {
+  String name;
+  @override
+  _searchpageState createState() => _searchpageState();
+}
+
+class _searchpageState extends State<searchpage> {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 }
