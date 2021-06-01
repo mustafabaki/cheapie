@@ -224,6 +224,7 @@ class _firstScreenState extends State<firstScreen> {
                   labelText: 'Enter your username')),
           TextFormField(
             controller: password,
+            obscureText: true,
             decoration: InputDecoration(
                 border: UnderlineInputBorder(),
                 labelText: 'Enter your password'),
@@ -335,7 +336,12 @@ class screen extends StatefulWidget {
 
 class _screenState extends State<screen> {
   int currentIndex = 0;
-  final List<Widget> screens = [home(), categories(), shops(), profile()];
+  final List<Widget> screens = [
+    home(),
+    categories(),
+    shops(),
+    profile(),
+  ];
   TextEditingController _searchQueryController = TextEditingController();
   bool _isSearching = false;
   String searchQuery = "Search query";
@@ -367,7 +373,7 @@ class _screenState extends State<screen> {
             BottomNavigationBarItem(
                 icon: Icon(Icons.local_mall), title: Text('Shops')),
             BottomNavigationBarItem(
-                icon: Icon(Icons.person), title: Text('Profile'))
+                icon: Icon(Icons.person), title: Text('Profile')),
           ],
         ),
         body: screens[currentIndex]);
@@ -392,6 +398,7 @@ class _homeState extends State<home> {
     return products;
   }
 
+  TextEditingController search = TextEditingController();
   @override
   void initState() {
     // TODO: implement initState
@@ -401,56 +408,85 @@ class _homeState extends State<home> {
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController search = TextEditingController();
     getproducts();
-    return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: FutureBuilder(
-            future: getproducts(),
-            builder: (context, projectSnap) {
-              if (projectSnap.connectionState == ConnectionState.none &&
-                  projectSnap.hasData == null) {
-                //print('project snapshot data is: ${projectSnap.data}');
-                return Container();
-              }
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          TextFormField(
+              controller: search,
+              decoration: InputDecoration(
+                  icon: GestureDetector(
+                    child: GestureDetector(child: Icon(Icons.search)),
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => searchpage(
+                                    name: search.text,
+                                  )));
+                    },
+                  ),
+                  border: UnderlineInputBorder(),
+                  labelText: 'Search')),
+          Container(
+            height: 500,
+            child: FutureBuilder(
+                future: getproducts(),
+                builder: (context, projectSnap) {
+                  if (projectSnap.connectionState == ConnectionState.none ||
+                      projectSnap.hasData == null ||
+                      projectSnap.connectionState == ConnectionState.waiting) {
+                    //print('project snapshot data is: ${projectSnap.data}');
+                    return CircularProgressIndicator();
+                  }
 
-              return GridView.builder(
-                  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 200,
-                      childAspectRatio: 3 / 2,
-                      crossAxisSpacing: 20,
-                      mainAxisSpacing: 20),
-                  itemCount: products.length,
-                  itemBuilder: (BuildContext ctx, index) {
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => detailpage(
-                                      name: projectSnap.data[index]["name"],
-                                      pic: projectSnap.data[index]["url"],
-                                      rate: projectSnap.data[index]
-                                          ["product_rate"],
-                                      id: projectSnap.data[index]["product_id"],
-                                      price: projectSnap.data[index]["price"],
-                                    )));
-                      },
-                      child: Container(
-                        alignment: Alignment.bottomCenter,
-                        child: Text(projectSnap.data[index]["name"]),
-                        decoration: BoxDecoration(
-                          color: Colors.black38,
-                          borderRadius: BorderRadius.circular(15),
-                          image: DecorationImage(
-                              image:
-                                  NetworkImage(projectSnap.data[index]['url']),
-                              fit: BoxFit.fitWidth),
-                        ),
-                      ),
-                    );
-                  });
-            }));
+                  return GridView.builder(
+                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 200,
+                          childAspectRatio: 3 / 2,
+                          crossAxisSpacing: 20,
+                          mainAxisSpacing: 20),
+                      itemCount: products.length,
+                      itemBuilder: (BuildContext ctx, index) {
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => detailpage(
+                                          name: projectSnap.data[index]["name"],
+                                          pic: projectSnap.data[index]["url"],
+                                          rate: projectSnap.data[index]
+                                              ["product_rate"],
+                                          id: projectSnap.data[index]
+                                              ["product_id"],
+                                          price: projectSnap.data[index]
+                                              ["price"],
+                                        )));
+                          },
+                          child: Container(
+                            alignment: Alignment.bottomCenter,
+                            child: Text(projectSnap.data[index]["name"],
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                    backgroundColor: Colors.white)),
+                            decoration: BoxDecoration(
+                              color: Colors.black38,
+                              borderRadius: BorderRadius.circular(15),
+                              image: DecorationImage(
+                                  image: NetworkImage(
+                                      projectSnap.data[index]['url']),
+                                  fit: BoxFit.fitWidth),
+                            ),
+                          ),
+                        );
+                      });
+                }),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -469,10 +505,11 @@ class _categoriesState extends State<categories> {
     return FutureBuilder(
         future: getcategory(),
         builder: (context, projectSnap) {
-          if (projectSnap.connectionState == ConnectionState.none &&
-              projectSnap.hasData == null) {
+          if (projectSnap.connectionState == ConnectionState.none ||
+              projectSnap.hasData == null ||
+              projectSnap.connectionState == ConnectionState.waiting) {
             //print('project snapshot data is: ${projectSnap.data}');
-            return Container();
+            return CircularProgressIndicator();
           }
           return ListView.builder(
               itemCount: projectSnap.data.length,
@@ -508,10 +545,11 @@ class _shopsState extends State<shops> {
     return FutureBuilder(
         future: getshops(),
         builder: (context, projectSnap) {
-          if (projectSnap.connectionState == ConnectionState.none &&
-              projectSnap.hasData == null) {
+          if (projectSnap.connectionState == ConnectionState.none ||
+              projectSnap.hasData == null ||
+              projectSnap.connectionState == ConnectionState.waiting) {
             //print('project snapshot data is: ${projectSnap.data}');
-            return Container();
+            return CircularProgressIndicator();
           }
           return ListView.builder(
               itemCount: projectSnap.data.length,
@@ -548,7 +586,8 @@ class _profileState extends State<profile> {
         future: getDetails(),
         builder: (context, projectSnap) {
           if (projectSnap.connectionState == ConnectionState.none &&
-              projectSnap.hasData == null) {
+                  projectSnap.hasData == null ||
+              projectSnap.connectionState == ConnectionState.waiting) {
             //print('project snapshot data is: ${projectSnap.data}');
             return CircularProgressIndicator();
           }
@@ -646,10 +685,11 @@ class _detailpageState extends State<detailpage> {
           FutureBuilder(
               future: getComments(),
               builder: (context, projectSnap) {
-                if (projectSnap.connectionState == ConnectionState.none &&
-                    projectSnap.hasData == null) {
+                if (projectSnap.connectionState == ConnectionState.none ||
+                    projectSnap.hasData == null ||
+                    projectSnap.connectionState == ConnectionState.waiting) {
                   //print('project snapshot data is: ${projectSnap.data}');
-                  return Container();
+                  return CircularProgressIndicator();
                 }
                 return Container(
                   height: 200,
@@ -678,6 +718,7 @@ class _detailpageState extends State<detailpage> {
               onPressed: () async {
                 await db.rawInsert(
                     """ insert into comment (comment, user_id,product_id) values ("${comment.text}",$user_id, ${widget.id}) """);
+                setState(() {});
               },
               child: Text("Add Your Comment"))
         ],
@@ -690,13 +731,154 @@ class _detailpageState extends State<detailpage> {
 
 class searchpage extends StatefulWidget {
   String name;
+  searchpage({this.name});
+
   @override
   _searchpageState createState() => _searchpageState();
 }
 
 class _searchpageState extends State<searchpage> {
+  List<Map> result = [];
+  getresult() async {
+    List<Map> aa;
+    aa = await db.rawQuery(
+        """ select * from  product, category where category.category_id = product.category_id and (product.name like "%${widget.name}%" or category.category_name like "%${widget.name}%") """);
+    setState(() {
+      result = aa;
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getresult();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("Results for ${widget.name}"),
+          backgroundColor: Colors.redAccent,
+        ),
+        body: result.isEmpty
+            ? Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  Container(
+                    height: 550,
+                    child: ListView.builder(
+                        itemCount: result.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            child: ListTile(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => detailpage(
+                                              name: result[index]["name"],
+                                              pic: result[index]["url"],
+                                              rate: result[index]
+                                                  ["product_rate"],
+                                              id: result[index]["product_id"],
+                                              price: result[index]["price"],
+                                            )));
+                              },
+                              leading: Image(
+                                image: NetworkImage(result[index]["url"]),
+                              ),
+                              title: Text(result[index]["name"]),
+                              subtitle: Text("Price : " +
+                                  result[index]["price"].toString() +
+                                  "\n" +
+                                  "Rate : ${result[index]['product_rate']}/5 "),
+                              isThreeLine: true,
+                            ),
+                          );
+                        }),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                          width: 57,
+                          child: TextButton(
+                            onPressed: () async {
+                              List<Map> aa;
+                              aa = await db.rawQuery(
+                                  """ select * from  product, category where category.category_id = product.category_id and (product.name like "%${widget.name}%" or category.category_name like "%${widget.name}%") order by price""");
+                              setState(() {
+                                result = aa;
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Icon(Icons.arrow_downward_outlined),
+                                )
+                              ],
+                            ),
+                            style: ButtonStyle(
+                                backgroundColor:
+                                    MaterialStateProperty.all<Color>(
+                                        Colors.redAccent)),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: 57,
+                        child: TextButton(
+                          onPressed: () async {
+                            List<Map> aa;
+                            aa = await db.rawQuery(
+                                """ select * from  product, category where category.category_id = product.category_id and (product.name like "%${widget.name}%" or category.category_name like "%${widget.name}%") order by product_rate desc""");
+                            setState(() {
+                              result = aa;
+                            });
+                          },
+                          child: Row(
+                            children: [
+                              Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Icon(Icons.star_rate_rounded))
+                            ],
+                          ),
+                          style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  Colors.redAccent)),
+                        ),
+                      ),
+                      Container(
+                        width: 57,
+                        child: TextButton(
+                          onPressed: () async {
+                            List<Map> aa;
+                            aa = await db.rawQuery(
+                                """ select * from  product, category where category.category_id = product.category_id and (product.name like "%${widget.name}%" or category.category_name like "%${widget.name}%") order by product_rate desc, price asc""");
+                            setState(() {
+                              result = aa;
+                            });
+                          },
+                          child: Row(
+                            children: [
+                              Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Icon(Icons.attach_money_rounded))
+                            ],
+                          ),
+                          style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  Colors.redAccent)),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ));
   }
 }
