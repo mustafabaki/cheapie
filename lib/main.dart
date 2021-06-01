@@ -217,19 +217,32 @@ class _firstScreenState extends State<firstScreen> {
               image: AssetImage('images/logo.png'),
             ),
           ),
-          TextFormField(
-              controller: username,
-              decoration: InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: 'Enter your username')),
-          TextFormField(
-            controller: password,
-            decoration: InputDecoration(
-                border: UnderlineInputBorder(),
-                labelText: 'Enter your password'),
+          Padding(
+            padding: const EdgeInsets.all(11.0),
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.75,
+              child: TextFormField(
+                  controller: username,
+                  decoration: InputDecoration(
+                      border: UnderlineInputBorder(),
+                      labelText: 'Enter your username')),
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(11.0),
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.75,
+              child: TextFormField(
+                obscureText: true,
+                controller: password,
+                decoration: InputDecoration(
+                    border: UnderlineInputBorder(),
+                    labelText: 'Enter your password'),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
             child: FlatButton(
               onPressed: () async {
                 String usrname = username.text;
@@ -243,7 +256,12 @@ class _firstScreenState extends State<firstScreen> {
                       MaterialPageRoute(builder: (context) => screen()));
                 }
               },
-              child: Text("LOGIN"),
+              child: Text(
+                "LOGIN",
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
               color: Colors.redAccent,
             ),
           ),
@@ -254,7 +272,9 @@ class _firstScreenState extends State<firstScreen> {
                 Navigator.push(
                     context, MaterialPageRoute(builder: (context) => signup()));
               },
-              child: Text("TAP HERE TO SIGN UP! "),
+              child: Text("TAP HERE TO SIGN UP! ",style: TextStyle(
+                  color: Colors.white,
+                ),),
               color: Colors.redAccent,
             ),
           )
@@ -276,6 +296,8 @@ class _signupState extends State<signup> {
   TextEditingController city = TextEditingController();
   TextEditingController gender = TextEditingController();
   TextEditingController email = TextEditingController();
+  String dropdownValue = 'Male';
+
 
   @override
   Widget build(BuildContext context) {
@@ -284,45 +306,79 @@ class _signupState extends State<signup> {
         backgroundColor: Colors.redAccent,
         title: Text('Sign Up For Cheapie'),
       ),
-      body: Column(
-        children: [
-          TextFormField(
-              controller: username,
-              decoration: InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: 'Enter your username')),
-          TextFormField(
-              controller: email,
-              decoration: InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: 'Enter your email')),
-          TextFormField(
-              controller: password,
-              decoration: InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: 'Enter your password')),
-          TextFormField(
-              controller: gender,
-              decoration: InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: 'Enter your gender')),
-          TextFormField(
-              controller: phone,
-              decoration: InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: 'Enter your phone')),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: FlatButton(
-              onPressed: () async {
-                await db.rawInsert(
-                    """ insert into user (username, email,password,gender,phone, address_id,user_id) values ("${username.text}","${email.text}", "${password.text}", "${gender.text}", ${phone.text},2,2) """);
-              },
-              child: Text('SIGN UP'),
-              color: Colors.redAccent,
+      body: Padding(
+        padding: const EdgeInsets.all(25.0),
+        child: Column(
+          children: [
+            TextFormField(
+                controller: username,
+                decoration: InputDecoration(
+                    border: UnderlineInputBorder(),
+                    labelText: 'Enter your username')),
+            SizedBox(height: 10),
+            TextFormField(
+                controller: email,
+                decoration: InputDecoration(
+                    border: UnderlineInputBorder(),
+                    labelText: 'Enter your email')),
+            SizedBox(height: 15),
+            TextFormField(
+                obscureText: true,
+                controller: password,
+                decoration: InputDecoration(
+                    border: UnderlineInputBorder(),
+                    labelText: 'Enter your password')),
+            SizedBox(height: 15),
+            TextFormField(
+                controller: phone,
+                decoration: InputDecoration(
+                    border: UnderlineInputBorder(),
+                    labelText: 'Enter your phone')),
+            SizedBox(height: 15),
+            Padding(
+              padding: const EdgeInsets.only(right: 180),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Container(child: Text('Gender: ', style: TextStyle(color: Colors.grey[700]),),),
+                  DropdownButton<String>(
+                    value: dropdownValue,
+                    elevation: 16,
+                    style: const TextStyle(color: Colors.redAccent),
+                    underline: Container(
+                      height: 2,
+                      color: Colors.redAccent,
+                    ),
+                    onChanged: (String newValue) {
+                      setState(() {
+                        dropdownValue = newValue;
+                      });
+                    },
+                    items: <String>['Male', 'Female']
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
             ),
-          )
-        ],
+            Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: FlatButton(
+                onPressed: () async {
+                  print(phone.text);
+                   await db.rawInsert(
+                  """ insert into user (username, email,password,gender,phone, address_id,user_id) values ("${username.text}","${email.text}", "${password.text}", "${dropdownValue}", ${phone.text},2,2) """);
+                },
+                child: Text('SIGN UP'),
+                color: Colors.redAccent,
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
