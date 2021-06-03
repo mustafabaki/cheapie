@@ -209,6 +209,7 @@ class _firstScreenState extends State<firstScreen> {
       appBar: AppBar(
         backgroundColor: Colors.redAccent,
         title: Text('Cheapie'),
+        centerTitle: true,
       ),
       body: Column(
         children: [
@@ -412,7 +413,14 @@ class _screenState extends State<screen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Cheapie"),
+          title: Text(
+            "Cheapie",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 25,
+            ),
+          ),
+          centerTitle: true,
           leading: _isSearching ? const BackButton() : Container(),
           backgroundColor: Colors.redAccent,
         ),
@@ -474,22 +482,25 @@ class _homeState extends State<home> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          TextFormField(
-              controller: search,
-              decoration: InputDecoration(
-                  icon: GestureDetector(
-                    child: GestureDetector(child: Icon(Icons.search)),
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => searchpage(
-                                    name: search.text,
-                                  )));
-                    },
-                  ),
-                  border: UnderlineInputBorder(),
-                  labelText: 'Search')),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextFormField(
+                controller: search,
+                decoration: InputDecoration(
+                    icon: GestureDetector(
+                      child: GestureDetector(child: Icon(Icons.search)),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => searchpage(
+                                      name: search.text,
+                                    )));
+                      },
+                    ),
+                    border: UnderlineInputBorder(),
+                    labelText: 'Search')),
+          ),
           Container(
             height: 500,
             child: FutureBuilder(
@@ -502,48 +513,61 @@ class _homeState extends State<home> {
                     return CircularProgressIndicator();
                   }
 
-                  return GridView.builder(
-                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 200,
-                          childAspectRatio: 3 / 2,
-                          crossAxisSpacing: 20,
-                          mainAxisSpacing: 20),
-                      itemCount: products.length,
-                      itemBuilder: (BuildContext ctx, index) {
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => detailpage(
-                                          name: projectSnap.data[index]["name"],
-                                          pic: projectSnap.data[index]["url"],
-                                          rate: projectSnap.data[index]
-                                              ["product_rate"],
-                                          id: projectSnap.data[index]
-                                              ["product_id"],
-                                          price: projectSnap.data[index]
-                                              ["price"],
-                                        )));
-                          },
-                          child: Container(
-                            alignment: Alignment.bottomCenter,
-                            child: Text(projectSnap.data[index]["name"],
-                                style: TextStyle(
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.bold,
-                                    backgroundColor: Colors.white)),
-                            decoration: BoxDecoration(
-                              color: Colors.black38,
-                              borderRadius: BorderRadius.circular(15),
-                              image: DecorationImage(
-                                  image: NetworkImage(
-                                      projectSnap.data[index]['url']),
-                                  fit: BoxFit.fitWidth),
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: GridView.builder(
+                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 200,
+                            childAspectRatio: 3 / 2,
+                            crossAxisSpacing: 20,
+                            mainAxisSpacing: 20),
+                        itemCount: products.length,
+                        itemBuilder: (BuildContext ctx, index) {
+                          return ClipRRect(
+                            child: Hero(
+                              tag: projectSnap.data[index]["product_id"],
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => detailpage(
+                                        name: projectSnap.data[index]["name"],
+                                        pic: projectSnap.data[index]["url"],
+                                        rate: projectSnap.data[index]
+                                            ["product_rate"],
+                                        id: projectSnap.data[index]
+                                            ["product_id"],
+                                        price: projectSnap.data[index]["price"],
+                                        brand: projectSnap.data[index]["brand"],
+                                        total_amount: projectSnap.data[index]
+                                            ["total_amount"],
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  alignment: Alignment.bottomCenter,
+                                  child: Text(projectSnap.data[index]["name"],
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w200,
+                                          backgroundColor: Colors.transparent
+                                              .withOpacity(0.5))),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black38,
+                                    borderRadius: BorderRadius.circular(15),
+                                    image: DecorationImage(
+                                        image: NetworkImage(
+                                            projectSnap.data[index]['url']),
+                                        fit: BoxFit.fitWidth),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        );
-                      });
+                          );
+                        }),
+                  );
                 }),
           ),
         ],
@@ -579,8 +603,20 @@ class _categoriesState extends State<categories> {
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ListTile(
+                    leading: index == 0? Icon(Icons.computer): Icon(Icons.home),
                     tileColor: Colors.red.shade100,
                     title: Text(projectSnap.data[index]['category_name']),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => categoryList(
+                              category_id: (index + 1),
+                              category_name: projectSnap.data[index]
+                                  ['category_name']),
+                        ),
+                      );
+                    },
                   ),
                 );
               });
@@ -687,7 +723,17 @@ class detailpage extends StatefulWidget {
   String pic;
   int rate;
   int price;
-  detailpage({this.name, this.pic, this.rate, this.id, this.price});
+  String brand;
+  int total_amount;
+
+  detailpage(
+      {this.name,
+      this.pic,
+      this.rate,
+      this.id,
+      this.price,
+      this.brand,
+      this.total_amount});
   @override
   _detailpageState createState() => _detailpageState();
 }
@@ -718,72 +764,178 @@ class _detailpageState extends State<detailpage> {
         title: Text("Details of ${widget.name}"),
         backgroundColor: Colors.redAccent,
       ),
-      body: ListView(
-        children: [
-          Image(image: NetworkImage(widget.pic)),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text("Rating of the product: ",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          ),
-          RatingBar.builder(
-              initialRating: widget.rate.toDouble(),
-              minRating: 1,
-              direction: Axis.horizontal,
-              allowHalfRating: true,
-              itemCount: 5,
-              itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-              itemBuilder: (context, _) => Icon(
-                    Icons.star,
-                    color: Colors.amber,
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ListView(
+          children: [
+            Image(image: NetworkImage(widget.pic)),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text("Rating of the product: ",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            ),
+            RatingBar.builder(
+                initialRating: widget.rate.toDouble(),
+                minRating: 1,
+                direction: Axis.horizontal,
+                allowHalfRating: true,
+                itemCount: 5,
+                itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                itemBuilder: (context, _) => Icon(
+                      Icons.star,
+                      color: Colors.amber,
+                    ),
+                onRatingUpdate: (rating) {
+                  print(rating);
+                }),
+            SizedBox(height: 15),
+            Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4.0),
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.20,
+                  width: double.infinity,
+                  // color: Colors.green,
+                  child: Column(
+                    children: <Widget>[
+                      SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: Row(children: <Widget>[
+                          Expanded(child: Divider(thickness: 2)),
+                          Text(
+                            'Product Details',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize:
+                                  MediaQuery.textScaleFactorOf(context) * 20,
+                            ),
+                          ),
+                          Expanded(child: Divider(thickness: 2)),
+                        ]),
+                      ),
+                      SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Price: ${widget.price}",
+                            style: TextStyle(
+                                fontSize: 25, fontWeight: FontWeight.w400),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'In stock: ${widget.total_amount}',
+                            style: TextStyle(
+                              fontSize:
+                                  MediaQuery.textScaleFactorOf(context) * 19,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 15),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Brand: ${widget.brand}',
+                            style: TextStyle(
+                              fontSize:
+                                  MediaQuery.textScaleFactorOf(context) * 19,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-              onRatingUpdate: (rating) {
-                print(rating);
-              }),
-          Text(
-            "Price: ${widget.price}",
-            style: TextStyle(fontSize: 20),
-          ),
-          FutureBuilder(
-              future: getComments(),
-              builder: (context, projectSnap) {
-                if (projectSnap.connectionState == ConnectionState.none ||
-                    projectSnap.hasData == null ||
-                    projectSnap.connectionState == ConnectionState.waiting) {
-                  //print('project snapshot data is: ${projectSnap.data}');
-                  return CircularProgressIndicator();
-                }
-                return Container(
-                  height: 200,
-                  child: ListView.builder(
-                      itemCount: projectSnap.data.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ListTile(
-                              leading: Icon(Icons.comment),
-                              title: Text("User ${user_id} has said:"),
-                              subtitle:
-                                  Text(projectSnap.data[index]["comment"]),
-                              tileColor: Colors.red.shade100),
-                        );
-                      }),
-                );
-              }),
-          TextFormField(
-            controller: comment,
-            decoration: InputDecoration(
-                border: UnderlineInputBorder(),
-                labelText: 'You can add your comment here'),
-          ),
-          FlatButton(
-              onPressed: () async {
-                await db.rawInsert(
-                    """ insert into comment (comment, user_id,product_id) values ("${comment.text}",$user_id, ${widget.id}) """);
-                setState(() {});
-              },
-              child: Text("Add Your Comment"))
-        ],
+                )),
+            SizedBox(height: 40),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 19.0),
+              child: Row(children: <Widget>[
+                Expanded(child: Divider(thickness: 1.5)),
+                Text(
+                  'Comments',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: MediaQuery.textScaleFactorOf(context) * 20,
+                  ),
+                ),
+                Expanded(child: Divider(thickness: 1.5)),
+              ]),
+            ),
+            FutureBuilder(
+                future: getComments(),
+                builder: (context, projectSnap) {
+                  if (projectSnap.connectionState == ConnectionState.none ||
+                      projectSnap.hasData == null ||
+                      projectSnap.connectionState == ConnectionState.waiting) {
+                    //print('project snapshot data is: ${projectSnap.data}');
+                    return CircularProgressIndicator();
+                  }
+                  return Container(
+                    height: 200,
+                    child: projectSnap.data.length != 0
+                        ? ListView.builder(
+                            itemCount: projectSnap.data.length,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: ListTile(
+                                    leading: Icon(Icons.comment),
+                                    title: Text("User ${user_id} has said:"),
+                                    subtitle: Text(
+                                        projectSnap.data[index]["comment"]),
+                                    tileColor: Colors.red.shade100),
+                              );
+                            })
+                        : Center(
+                            child: Text(
+                              'This product has no comments yet, Be the first to comment',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                  );
+                }),
+            Container(
+              decoration: new BoxDecoration(
+                shape: BoxShape.rectangle,
+                border: new Border.all(
+                  color: Colors.black,
+                  width: 1.0,
+                ),
+              ),
+              child: TextFormField(
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(255),
+                ],
+                controller: comment,
+                decoration: InputDecoration(
+                    contentPadding: EdgeInsets.all(10.0),
+                    border: UnderlineInputBorder(),
+                    labelText: ' comment here'),
+              ),
+            ),
+            FlatButton(
+                onPressed: () async {
+                  await db.rawInsert(
+                      """ insert into comment (comment, user_id,product_id) values ("${comment.text}",$user_id, ${widget.id}) """);
+                  setState(() {});
+                },
+                child: Text("Add Your Comment"))
+          ],
+        ),
       ),
     );
   }
@@ -837,16 +989,20 @@ class _searchpageState extends State<searchpage> {
                             child: ListTile(
                               onTap: () {
                                 Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => detailpage(
-                                              name: result[index]["name"],
-                                              pic: result[index]["url"],
-                                              rate: result[index]
-                                                  ["product_rate"],
-                                              id: result[index]["product_id"],
-                                              price: result[index]["price"],
-                                            )));
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => detailpage(
+                                      name: result[index]["name"],
+                                      pic: result[index]["url"],
+                                      rate: result[index]["product_rate"],
+                                      id: result[index]["product_id"],
+                                      price: result[index]["price"],
+                                      brand: result[index]["brand"],
+                                      total_amount: result[index]
+                                          ["total_amount"],
+                                    ),
+                                  ),
+                                );
                               },
                               leading: Image(
                                 image: NetworkImage(result[index]["url"]),
@@ -942,5 +1098,128 @@ class _searchpageState extends State<searchpage> {
                   )
                 ],
               ));
+  }
+}
+
+//====================================================== Categories List Shop ==============================
+
+class categoryList extends StatefulWidget {
+  int category_id;
+  String category_name;
+
+  categoryList({
+    this.category_id,
+    this.category_name,
+  });
+
+  @override
+  _categoryListState createState() => _categoryListState();
+}
+
+class _categoryListState extends State<categoryList> {
+  List<Map> productsByCategory = [];
+  getproductsByCategory() async {
+    productsByCategory = await db.rawQuery(
+        """select * from product WHERE category_id = ${widget.category_id} """);
+    print(productsByCategory.length);
+    return productsByCategory;
+  }
+
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getproductsByCategory();
+    print(widget.category_name);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    getproductsByCategory();
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: Colors.redAccent,
+        title: Text('${widget.category_name}'),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              height: 500,
+              child: FutureBuilder(
+                  future: getproductsByCategory(),
+                  builder: (context, projectSnap) {
+                    if (projectSnap.connectionState == ConnectionState.none ||
+                        projectSnap.hasData == null ||
+                        projectSnap.connectionState ==
+                            ConnectionState.waiting) {
+                      //print('project snapshot data is: ${projectSnap.data}');
+                      return CircularProgressIndicator();
+                    }
+
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: GridView.builder(
+                          gridDelegate:
+                              SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent: 200,
+                                  childAspectRatio: 3 / 2,
+                                  crossAxisSpacing: 20,
+                                  mainAxisSpacing: 20),
+                          itemCount: productsByCategory.length,
+                          itemBuilder: (BuildContext ctx, index) {
+                            return ClipRRect(
+                              child: Hero(
+                                tag: projectSnap.data[index]["product_id"],
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => detailpage(
+                                          name: projectSnap.data[index]["name"],
+                                          pic: projectSnap.data[index]["url"],
+                                          rate: projectSnap.data[index]
+                                              ["product_rate"],
+                                          id: projectSnap.data[index]
+                                              ["product_id"],
+                                          price: projectSnap.data[index]
+                                              ["price"],
+                                          brand: projectSnap.data[index]
+                                              ["brand"],
+                                          total_amount: projectSnap.data[index]
+                                              ["total_amount"],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    alignment: Alignment.bottomCenter,
+                                    child: Text(projectSnap.data[index]["name"],
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w200,
+                                            backgroundColor: Colors.transparent
+                                                .withOpacity(0.5))),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black38,
+                                      borderRadius: BorderRadius.circular(15),
+                                      image: DecorationImage(
+                                          image: NetworkImage(
+                                              projectSnap.data[index]['url']),
+                                          fit: BoxFit.fitWidth),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                    );
+                  }),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
