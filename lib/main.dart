@@ -9,7 +9,7 @@ int user_id;
 
 void main() async {
   runApp(MaterialApp(
-    debugShowCheckedModeBanner: true,
+    debugShowCheckedModeBanner: false,
     home: firstScreen(),
   ));
 
@@ -180,6 +180,21 @@ void main() async {
       """ insert into product (product_id,product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(6,2, "Bosch Vacuum Cleaner", 500, 2100, "Bosch", 2, 2,"https://cdn11.bigcommerce.com/s-r173ig0mpx/images/stencil/1280x1280/products/235/512/Bosch-Vacuum-Cleaner-Bagged-Steel-2400-Watt-242005081646-100084-R-01__65598.1617541023.jpg?c=1")  """);
 
   await db.rawInsert(
+      """ insert into product (product_id,product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(7,3, "Casper Laptop", 800, 2100, "Casper", 1, 2,"https://www.vatanbilgisayar.com/upload/HTML/PCPOR/CASPER/72881/1.jpg")  """);
+
+  await db.rawInsert(
+      """ insert into product (product_id,product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(8,5, " Samsung Chromebook", 800, 1100, "Samsung", 1, 2,"https://www.notebookcheck-tr.com/uploads/tx_nbc2/SamsungChromebookPlusXE521QABK01US__1_.jpg")  """);
+
+  await db.rawInsert(
+      """ insert into product (product_id,product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(9,2, "TCL Laptop", 700, 900, "TCL", 1, 1,"https://i.pinimg.com/originals/07/62/61/07626159af4953b4045aca3f9e0f305f.jpg")  """);
+
+  await db.rawInsert(
+      """ insert into product (product_id,product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(10,5, "Samsung Dishwasher", 700, 3900, "Samsung", 2, 1,"https://s.yimg.com/aah/usappliance/dw80r7061us-samsung-24-built-in-dishwasher-with-stormwash-and-autorelease-door-fingerprint-resistant-stainless-steel-12.jpg")  """);
+
+  await db.rawInsert(
+      """ insert into product (product_id,product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(11,4, "Vestel Dishwasher", 100, 2800, "Vestel", 2, 1,"https://cdn.vestelinternational.com/media/15029200237a5bae25aba1fa4e72ae1876fec2a196.jpg")  """);
+
+  await db.rawInsert(
       """ insert into address (address_id,street,postal_code,country) values (1, "Kurtulus Sokak", 38000, "Turkey") """);
 
   await db.rawInsert(
@@ -211,78 +226,80 @@ class _firstScreenState extends State<firstScreen> {
         title: Text('Cheapie'),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          Center(
-            child: Image(
-              image: AssetImage('images/logo.png'),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Center(
+              child: Image(
+                image: AssetImage('images/logo.png'),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(11.0),
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.75,
-              child: TextFormField(
-                  controller: username,
+            Padding(
+              padding: const EdgeInsets.all(11.0),
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.75,
+                child: TextFormField(
+                    controller: username,
+                    decoration: InputDecoration(
+                        border: UnderlineInputBorder(),
+                        labelText: 'Enter your username')),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(11.0),
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.75,
+                child: TextFormField(
+                  obscureText: true,
+                  controller: password,
                   decoration: InputDecoration(
                       border: UnderlineInputBorder(),
-                      labelText: 'Enter your username')),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(11.0),
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.75,
-              child: TextFormField(
-                obscureText: true,
-                controller: password,
-                decoration: InputDecoration(
-                    border: UnderlineInputBorder(),
-                    labelText: 'Enter your password'),
+                      labelText: 'Enter your password'),
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: FlatButton(
-              onPressed: () async {
-                String usrname = username.text;
-                String passwordd = password.text;
-                List<Map> list = await db.rawQuery(
-                    'SELECT * FROM user where username = "$usrname" and password = "$passwordd"');
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: FlatButton(
+                onPressed: () async {
+                  String usrname = username.text;
+                  String passwordd = password.text;
+                  List<Map> list = await db.rawQuery(
+                      'SELECT * FROM user where username = "$usrname" and password = "$passwordd"');
 
-                if (list.isEmpty == false) {
-                  user_id = list[0]['user_id'];
+                  if (list.isEmpty == false) {
+                    user_id = list[0]['user_id'];
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => screen()));
+                  }
+                },
+                child: Text(
+                  "LOGIN",
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+                color: Colors.redAccent,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FlatButton(
+                onPressed: () {
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => screen()));
-                }
-              },
-              child: Text(
-                "LOGIN",
-                style: TextStyle(
-                  color: Colors.white,
+                      MaterialPageRoute(builder: (context) => signup()));
+                },
+                child: Text(
+                  "TAP HERE TO SIGN UP! ",
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
                 ),
+                color: Colors.redAccent,
               ),
-              color: Colors.redAccent,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: FlatButton(
-              onPressed: () {
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => signup()));
-              },
-              child: Text(
-                "TAP HERE TO SIGN UP! ",
-                style: TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-              color: Colors.redAccent,
-            ),
-          )
-        ],
+            )
+          ],
+        ),
       ),
     );
   }
@@ -311,81 +328,89 @@ class _signupState extends State<signup> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(25.0),
-        child: Column(
-          children: [
-            TextFormField(
-                controller: username,
-                decoration: InputDecoration(
-                    border: UnderlineInputBorder(),
-                    labelText: 'Enter your username')),
-            SizedBox(height: 10),
-            TextFormField(
-                controller: email,
-                decoration: InputDecoration(
-                    border: UnderlineInputBorder(),
-                    labelText: 'Enter your email')),
-            SizedBox(height: 15),
-            TextFormField(
-                obscureText: true,
-                controller: password,
-                decoration: InputDecoration(
-                    border: UnderlineInputBorder(),
-                    labelText: 'Enter your password')),
-            SizedBox(height: 15),
-            TextFormField(
-                controller: phone,
-                decoration: InputDecoration(
-                    border: UnderlineInputBorder(),
-                    labelText: 'Enter your phone')),
-            SizedBox(height: 15),
-            Padding(
-              padding: const EdgeInsets.only(right: 180),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Container(
-                    child: Text(
-                      'Gender: ',
-                      style: TextStyle(color: Colors.grey[700]),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              TextFormField(
+                  controller: username,
+                  decoration: InputDecoration(
+                      border: UnderlineInputBorder(),
+                      labelText: 'Enter your username')),
+              SizedBox(height: 10),
+              TextFormField(
+                  controller: email,
+                  decoration: InputDecoration(
+                      border: UnderlineInputBorder(),
+                      labelText: 'Enter your email')),
+              SizedBox(height: 15),
+              TextFormField(
+                  obscureText: true,
+                  controller: password,
+                  decoration: InputDecoration(
+                      border: UnderlineInputBorder(),
+                      labelText: 'Enter your password')),
+              SizedBox(height: 15),
+              TextFormField(
+                  controller: phone,
+                  decoration: InputDecoration(
+                      border: UnderlineInputBorder(),
+                      labelText: 'Enter your phone')),
+              SizedBox(height: 15),
+              TextFormField(
+                  controller: city,
+                  decoration: InputDecoration(
+                      border: UnderlineInputBorder(),
+                      labelText: 'Enter your city')),
+              SizedBox(height: 15),
+              Padding(
+                padding: const EdgeInsets.only(right: 180),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Container(
+                      child: Text(
+                        'Gender: ',
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
                     ),
-                  ),
-                  DropdownButton<String>(
-                    value: dropdownValue,
-                    elevation: 16,
-                    style: const TextStyle(color: Colors.redAccent),
-                    underline: Container(
-                      height: 2,
-                      color: Colors.redAccent,
+                    DropdownButton<String>(
+                      value: dropdownValue,
+                      elevation: 16,
+                      style: const TextStyle(color: Colors.redAccent),
+                      underline: Container(
+                        height: 2,
+                        color: Colors.redAccent,
+                      ),
+                      onChanged: (String newValue) {
+                        setState(() {
+                          dropdownValue = newValue;
+                        });
+                      },
+                      items: <String>['Male', 'Female']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
                     ),
-                    onChanged: (String newValue) {
-                      setState(() {
-                        dropdownValue = newValue;
-                      });
-                    },
-                    items: <String>['Male', 'Female']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: FlatButton(
-                onPressed: () async {
-                  print(phone.text);
-                  await db.rawInsert(
-                      """ insert into user (username, email,password,gender,phone, address_id,user_id) values ("${username.text}","${email.text}", "${password.text}", "${dropdownValue}", ${phone.text},2,2) """);
-                },
-                child: Text('SIGN UP'),
-                color: Colors.redAccent,
-              ),
-            )
-          ],
+              Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: FlatButton(
+                  onPressed: () async {
+                    print(phone.text);
+                    await db.rawInsert(
+                        """ insert into user (username, email,password,gender,phone, address_id,user_id) values ("${username.text}","${email.text}", "${password.text}", "${dropdownValue}", ${phone.text},2,2) """);
+                  },
+                  child: Text('SIGN UP'),
+                  color: Colors.redAccent,
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -603,7 +628,8 @@ class _categoriesState extends State<categories> {
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ListTile(
-                    leading: index == 0? Icon(Icons.computer): Icon(Icons.home),
+                    leading:
+                        index == 0 ? Icon(Icons.computer) : Icon(Icons.home),
                     tileColor: Colors.red.shade100,
                     title: Text(projectSnap.data[index]['category_name']),
                     onTap: () {
@@ -778,14 +804,18 @@ class _detailpageState extends State<detailpage> {
                 initialRating: widget.rate.toDouble(),
                 minRating: 1,
                 direction: Axis.horizontal,
-                allowHalfRating: true,
+                allowHalfRating: false,
                 itemCount: 5,
                 itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
                 itemBuilder: (context, _) => Icon(
                       Icons.star,
                       color: Colors.amber,
                     ),
-                onRatingUpdate: (rating) {
+                onRatingUpdate: (rating) async {
+                  double newrating = (widget.rate + rating) / 2;
+                  await db.rawUpdate(
+                      """ update product set product_rate = ${newrating} where product_id = ${widget.id}""");
+
                   print(rating);
                 }),
             SizedBox(height: 15),
@@ -962,6 +992,16 @@ class _searchpageState extends State<searchpage> {
     });
   }
 
+  Future<bool> refresh() async {
+    List<Map> aa;
+    aa = await db.rawQuery(
+        """ select * from  product, category where category.category_id = product.category_id and (product.name like "%${widget.name}%" or category.category_name like "%${widget.name}%") """);
+    setState(() {
+      result = aa;
+    });
+    return true;
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -982,40 +1022,43 @@ class _searchpageState extends State<searchpage> {
                 children: [
                   Container(
                     height: 550,
-                    child: ListView.builder(
-                        itemCount: result.length,
-                        itemBuilder: (context, index) {
-                          return Card(
-                            child: ListTile(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => detailpage(
-                                      name: result[index]["name"],
-                                      pic: result[index]["url"],
-                                      rate: result[index]["product_rate"],
-                                      id: result[index]["product_id"],
-                                      price: result[index]["price"],
-                                      brand: result[index]["brand"],
-                                      total_amount: result[index]
-                                          ["total_amount"],
+                    child: RefreshIndicator(
+                      onRefresh: refresh,
+                      child: ListView.builder(
+                          itemCount: result.length,
+                          itemBuilder: (context, index) {
+                            return Card(
+                              child: ListTile(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => detailpage(
+                                        name: result[index]["name"],
+                                        pic: result[index]["url"],
+                                        rate: result[index]["product_rate"],
+                                        id: result[index]["product_id"],
+                                        price: result[index]["price"],
+                                        brand: result[index]["brand"],
+                                        total_amount: result[index]
+                                            ["total_amount"],
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                              leading: Image(
-                                image: NetworkImage(result[index]["url"]),
+                                  );
+                                },
+                                leading: Image(
+                                  image: NetworkImage(result[index]["url"]),
+                                ),
+                                title: Text(result[index]["name"]),
+                                subtitle: Text("Price : " +
+                                    result[index]["price"].toString() +
+                                    "\n" +
+                                    "Rate : ${result[index]['product_rate']}/5 "),
+                                isThreeLine: true,
                               ),
-                              title: Text(result[index]["name"]),
-                              subtitle: Text("Price : " +
-                                  result[index]["price"].toString() +
-                                  "\n" +
-                                  "Rate : ${result[index]['product_rate']}/5 "),
-                              isThreeLine: true,
-                            ),
-                          );
-                        }),
+                            );
+                          }),
+                    ),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
