@@ -208,6 +208,28 @@ void main() async {
 
   await db.rawInsert(
       """ insert into shops (shop_id,shop_name,seller_id,address_id) values (2,"Media Markt", 2,1) """);
+  await db
+      .rawInsert(""" insert into sold_in (product_id, shop_id) values(1,1)""");
+  await db
+      .rawInsert(""" insert into sold_in (product_id, shop_id) values(2,2)""");
+  await db
+      .rawInsert(""" insert into sold_in (product_id, shop_id) values(3,1)""");
+  await db
+      .rawInsert(""" insert into sold_in (product_id, shop_id) values(4,2)""");
+  await db
+      .rawInsert(""" insert into sold_in (product_id, shop_id) values(5,2)""");
+  await db
+      .rawInsert(""" insert into sold_in (product_id, shop_id) values(6,2)""");
+  await db
+      .rawInsert(""" insert into sold_in (product_id, shop_id) values(7,2)""");
+  await db
+      .rawInsert(""" insert into sold_in (product_id, shop_id) values(8,2)""");
+  await db
+      .rawInsert(""" insert into sold_in (product_id, shop_id) values(9,1)""");
+  await db
+      .rawInsert(""" insert into sold_in (product_id, shop_id) values(10,1)""");
+  await db
+      .rawInsert(""" insert into sold_in (product_id, shop_id) values(11,1)""");
 }
 
 class firstScreen extends StatefulWidget {
@@ -271,6 +293,12 @@ class _firstScreenState extends State<firstScreen> {
                     user_id = list[0]['user_id'];
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) => screen()));
+                  } else {
+                    final snackBar = SnackBar(
+                        content: Text(
+                            'Your password or username is wrong! Try again!'));
+
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   }
                 },
                 child: Text(
@@ -680,9 +708,19 @@ class _shopsState extends State<shops> {
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: ListTile(
-                    tileColor: Colors.red.shade100,
-                    title: Text(projectSnap.data[index]['shop_name']),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => detailsShop(
+                                shopname: projectSnap.data[index]['shop_name']),
+                          ));
+                    },
+                    child: ListTile(
+                      tileColor: Colors.red.shade100,
+                      title: Text(projectSnap.data[index]['shop_name']),
+                    ),
                   ),
                 );
               });
@@ -737,6 +775,34 @@ class _profileState extends State<profile> {
                 title: Text("Postal Code"),
                 subtitle: Text(projectSnap.data[0]["postal_code"].toString()),
               ),
+              TextButton(
+                onPressed: () => showDialog<String>(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: const Text('Are You Sure?'),
+                    content: const Text('Tap on OK to delete your account'),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, 'Cancel'),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          await db.rawDelete(
+                              """ delete from user where user_id = "${user_id}" """);
+
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => firstScreen()));
+                        },
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                ),
+                child: const Text('Delete My Account'),
+              )
             ],
           );
         });
@@ -1263,6 +1329,104 @@ class _categoryListState extends State<categoryList> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class detailsShop extends StatefulWidget {
+  String shopname;
+
+  detailsShop({this.shopname});
+
+  @override
+  _detailsShopState createState() => _detailsShopState();
+}
+
+class _detailsShopState extends State<detailsShop> {
+  List<Map> details = [];
+  List<Map> products = [];
+  void getDetails() async {
+    List<Map> list = await db.rawQuery(
+        """ select * from shops, address where shops.address_id = address.address_id and shops.shop_name = "${widget.shopname}" """);
+
+    List<Map> list2 = await db.rawQuery(
+        """ select * from sold_in, shops, product where product.product_id = sold_in.product_id and shops.shop_id = sold_in.shop_id and shops.shop_name = "${widget.shopname}" """);
+
+    setState(() {
+      details = list;
+      products = list2;
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    getDetails();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text("${widget.shopname}"),
+        backgroundColor: Colors.redAccent,
+      ),
+      body: (details.isEmpty && products.isEmpty)
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : Column(
+              children: [
+                Expanded(
+                    child: Column(
+                  children: [
+                    ListTile(
+                      title: Text("Street : "),
+                      subtitle: Text(details[0]['street'].toString()),
+                    ),
+                    ListTile(
+                      title: Text("Country"),
+                      subtitle: Text(details[0]['country'].toString()),
+                    ),
+                    ListTile(
+                      title: Text("Postal Code"),
+                      subtitle: Text(details[0]['postal_code'].toString()),
+                    )
+                  ],
+                )),
+                Expanded(
+                    child: ListView.builder(
+                        itemCount: products.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => detailpage(
+                                            name: products[index]['name'],
+                                            brand: products[index]['brand'],
+                                            id: products[index]['product_id'],
+                                            pic: products[index]['url'],
+                                            price: products[index]['price'],
+                                            rate: products[index]
+                                                ['product_rate'],
+                                            total_amount: products[index]
+                                                ['total_amount'],
+                                          )));
+                            },
+                            child: Card(
+                              elevation: 5,
+                              child: ListTile(
+                                leading: Image.network(products[index]['url']),
+                                title: Text(products[index]['name']),
+                              ),
+                            ),
+                          );
+                        }))
+              ],
+            ),
     );
   }
 }
