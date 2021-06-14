@@ -40,6 +40,8 @@ void main() async {
     REFERENCES  `address_detail` (`postal_code`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION) """);
+
+    //Create the user table 
     await db.execute(""" CREATE TABLE IF NOT EXISTS `user` (
   `user_id` INT  AUTO_INCREMENT,
   `email` VARCHAR(45) NOT NULL,
@@ -55,14 +57,20 @@ void main() async {
     REFERENCES  `address` (`address_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION) """);
+
+    //SQFlite query to create category table
     await db.execute(""" CREATE TABLE IF NOT EXISTS  `category` (
   `category_id` INT AUTO_INCREMENT,
   `category_name` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`category_id`)) """);
+
+  //SQFlite query to create seller table
     await db.execute(""" CREATE TABLE IF NOT EXISTS  `seller` (
   `seller_id` INT AUTO_INCREMENT,
   `seller_name` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`seller_id`)) """);
+
+  //SQFlite query to create product table
     await db.execute(""" CREATE TABLE IF NOT EXISTS  `product` (
   `product_id` INT AUTO_INCREMENT,
   `product_rate` INT NOT NULL,
@@ -86,6 +94,7 @@ void main() async {
     ON DELETE NO ACTION
     ON UPDATE NO ACTION) """);
 
+    //SQFlite query to create buys table
     await db.execute(""" CREATE TABLE IF NOT EXISTS  `buys` (
   `user_id` INT NOT NULL,
   `product_id` INT NOT NULL,
@@ -102,6 +111,7 @@ void main() async {
     ON DELETE NO ACTION
     ON UPDATE NO ACTION) """);
 
+    //SQFlite query to create comment table
     await db.execute(""" CREATE TABLE IF NOT EXISTS  `comment` (
   `comment` VARCHAR(45) NOT NULL,
   `user_id` INT NOT NULL,
@@ -117,6 +127,8 @@ void main() async {
     REFERENCES  `product` (`product_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION) """);
+
+    //SQL query to create shops table
     await db.execute(""" CREATE TABLE IF NOT EXISTS  `shops` (
   `shop_id` INT AUTO_INCREMENT,
   `shop_name` VARCHAR(45) NOT NULL,
@@ -135,6 +147,7 @@ void main() async {
     ON DELETE NO ACTION
     ON UPDATE NO ACTION) """);
 
+    //Create Table sold_in query
     await db.execute(""" CREATE TABLE IF NOT EXISTS  `sold_in` (
   `shop_id` INT NOT NULL,
   `product_id` INT NOT NULL,
@@ -152,15 +165,18 @@ void main() async {
     ON UPDATE NO ACTION)  """);
   });
 
+  //List down all the table names of the app
   var tableNames =
       (await db.query('sqlite_master', where: 'type = ?', whereArgs: ['table']))
           .map((row) => row['name'] as String)
           .toList(growable: false);
   print(tableNames);
 
+  //Insert query to user table
   await db.execute(
       """ insert into user (email,phone,username,password,gender,address_id,user_id)  values("m@gmail.com",12345, "user1", "12345", "male",1,1) """);
 
+  //Insert queries to product table
   await db.rawInsert(
       """ insert into product (product_id,product_rate, name, total_amount, price, brand, category_id, seller_id, url) values(1,4, "Lenovo Laptop", 12345, 12000, "Lenovo", 1, 1,"https://www.lenovo.com/medias/lenovo-laptop-ideapad-3-15-intel-gallery-1.png?context=bWFzdGVyfHJvb3R8MjIxNjM1fGltYWdlL3BuZ3xoMjIvaDkyLzEwNzU3MjQzOTI4NjA2LnBuZ3xhMjhmOWI5NmQ1ODE2YzIyN2RjZjg0YjU1MTIzYzAyNzY2Y2I3MTU4ZTAyNWI1MjQ5OTY4ZTFjMjBmMzYyNWI4")  """);
 
@@ -210,7 +226,12 @@ void main() async {
       """ insert into shops (shop_id,shop_name,seller_id,address_id) values (2,"Media Markt", 2,1) """);
 }
 
+
 class firstScreen extends StatefulWidget {
+  /** 
+   * The firstscreen stateful widget displays the login screen of the app, the purpose of this controllers
+   *  is to take the user and password input from the user
+   */
   @override
   _firstScreenState createState() => _firstScreenState();
 }
@@ -218,6 +239,7 @@ class firstScreen extends StatefulWidget {
 class _firstScreenState extends State<firstScreen> {
   TextEditingController username = TextEditingController();
   TextEditingController password = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -238,6 +260,7 @@ class _firstScreenState extends State<firstScreen> {
               padding: const EdgeInsets.all(11.0),
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.75,
+                //Textfield for Username, including the controller 
                 child: TextFormField(
                     controller: username,
                     decoration: InputDecoration(
@@ -249,6 +272,7 @@ class _firstScreenState extends State<firstScreen> {
               padding: const EdgeInsets.all(11.0),
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.75,
+                //Textfield for Username, including the signup
                 child: TextFormField(
                   obscureText: true,
                   controller: password,
@@ -260,10 +284,12 @@ class _firstScreenState extends State<firstScreen> {
             ),
             Padding(
               padding: const EdgeInsets.all(20.0),
+              //Button to log in, it authenticate the user and communicates with the database to ensure that the user exist.
               child: FlatButton(
                 onPressed: () async {
                   String usrname = username.text;
                   String passwordd = password.text;
+                  //Function to check if the user exist in the database.
                   List<Map> list = await db.rawQuery(
                       'SELECT * FROM user where username = "$usrname" and password = "$passwordd"');
 
@@ -282,10 +308,12 @@ class _firstScreenState extends State<firstScreen> {
                 color: Colors.redAccent,
               ),
             ),
+            //Button to navigate to the sign up page
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: FlatButton(
                 onPressed: () {
+                  //Function to move the page to the signup.
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => signup()));
                 },
@@ -308,6 +336,11 @@ class _firstScreenState extends State<firstScreen> {
 class signup extends StatefulWidget {
   @override
   _signupState createState() => _signupState();
+  /**
+   * The signup stateful widget is a page that display the page where user can sign up. 
+   * It utilizes controller to manage user input, when the user have entered the necessary information
+   * it will then go to the controller and from there will communicate to the database to execute queries.
+   */
 }
 
 class _signupState extends State<signup> {
@@ -331,18 +364,21 @@ class _signupState extends State<signup> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              //Textfield for username, including the controller
               TextFormField(
                   controller: username,
                   decoration: InputDecoration(
                       border: UnderlineInputBorder(),
                       labelText: 'Enter your username')),
               SizedBox(height: 10),
+              //Textfield for email, including the controller
               TextFormField(
                   controller: email,
                   decoration: InputDecoration(
                       border: UnderlineInputBorder(),
                       labelText: 'Enter your email')),
               SizedBox(height: 15),
+              //Textfield for password, including the controller, the obscuretext help in hiding user input
               TextFormField(
                   obscureText: true,
                   controller: password,
@@ -350,18 +386,21 @@ class _signupState extends State<signup> {
                       border: UnderlineInputBorder(),
                       labelText: 'Enter your password')),
               SizedBox(height: 15),
+              //Textfield for phone number, including the controller
               TextFormField(
                   controller: phone,
                   decoration: InputDecoration(
                       border: UnderlineInputBorder(),
                       labelText: 'Enter your phone')),
               SizedBox(height: 15),
+              //Textfield for user location, including the controller
               TextFormField(
                   controller: city,
                   decoration: InputDecoration(
                       border: UnderlineInputBorder(),
                       labelText: 'Enter your city')),
               SizedBox(height: 15),
+              //Code for drop down button, in this case to choose between male and female
               Padding(
                 padding: const EdgeInsets.only(right: 180),
                 child: Row(
@@ -397,6 +436,8 @@ class _signupState extends State<signup> {
                   ],
                 ),
               ),
+
+              //The button for the signup page, when clicked it execute a SQL query to insert it into the database
               Padding(
                 padding: const EdgeInsets.all(15.0),
                 child: FlatButton(
@@ -418,18 +459,26 @@ class _signupState extends State<signup> {
 }
 
 class screen extends StatefulWidget {
+  /**
+   * The screen Widget displays the home page of the app after the user is succesfully authenticated
+   * It utilizes bottom navigation bar that helps the user navigates trough multiple pages seamlessly
+   */
   @override
   _screenState createState() => _screenState();
 }
 
 class _screenState extends State<screen> {
   int currentIndex = 0;
+
+  //The list of pages that can be visited through the bottom navigation par
   final List<Widget> screens = [
     home(),
     categories(),
     shops(),
     profile(),
   ];
+
+  //Search query
   TextEditingController _searchQueryController = TextEditingController();
   bool _isSearching = false;
   String searchQuery = "Search query";
@@ -473,7 +522,7 @@ class _screenState extends State<screen> {
         ),
         body: screens[currentIndex]);
   }
-
+  //Function to switch the page through index
   void onTabTapped(int index) {
     setState(() {
       currentIndex = index;
@@ -488,6 +537,8 @@ class home extends StatefulWidget {
 
 class _homeState extends State<home> {
   List<Map> products = [];
+
+  //Retrieve the list of products from the database.
   getproducts() async {
     products = await db.rawQuery("""select * from product""");
     return products;
@@ -495,6 +546,8 @@ class _homeState extends State<home> {
 
   TextEditingController search = TextEditingController();
   @override
+
+  //Implement getFunction when the app is intialized.
   void initState() {
     // TODO: implement initState
     super.initState();
@@ -509,6 +562,8 @@ class _homeState extends State<home> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
+
+            //Textform field that includes the search function
             child: TextFormField(
                 controller: search,
                 decoration: InputDecoration(
@@ -602,27 +657,39 @@ class _homeState extends State<home> {
 }
 
 class categories extends StatefulWidget {
+  /**
+   * The categories widget displays a page with a list of category, so user can find products by categories.
+   * When user select a specific category it will navigate to a page that display the list of products based
+   * on that category.
+   */
   @override
   _categoriesState createState() => _categoriesState();
 }
 
 class _categoriesState extends State<categories> {
+  //Function to retrieve the list of category from the database.
   getcategory() async {
     return await db.rawQuery(""" select * from category""");
   }
 
   @override
   Widget build(BuildContext context) {
+    //Futurebuilder to display all the categories
     return FutureBuilder(
         future: getcategory(),
         builder: (context, projectSnap) {
+          //Check if connection is established and data is received.
+          //If data is not received, return a loading state
           if (projectSnap.connectionState == ConnectionState.none ||
               projectSnap.hasData == null ||
               projectSnap.connectionState == ConnectionState.waiting) {
             //print('project snapshot data is: ${projectSnap.data}');
             return CircularProgressIndicator();
           }
+
+          //If data is received, display this data through a list of categories.
           return ListView.builder(
+              //THe length of the list, based on the amount of category available in the database.
               itemCount: projectSnap.data.length,
               itemBuilder: (context, index) {
                 return Padding(
@@ -651,15 +718,22 @@ class _categoriesState extends State<categories> {
 }
 
 class shops extends StatefulWidget {
+  /**
+   * The shops widget displays a page with a list of shops, so user can find products by shops.
+   * When user select a specific category it will navigate to a page that display the list of products based
+   * on the chosen shop.
+   */
   @override
   _shopsState createState() => _shopsState();
 }
 
 class _shopsState extends State<shops> {
+  //Retrieve the list of categories from the database
   getcategory() async {
     return await db.rawQuery(""" select * from category""");
   }
 
+  //Retrieve the list of shops from the database
   getshops() async {
     return await db.rawQuery(""" select * from shops""");
   }
@@ -667,6 +741,7 @@ class _shopsState extends State<shops> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
+      //Futurebuilder to display all the shops
         future: getshops(),
         builder: (context, projectSnap) {
           if (projectSnap.connectionState == ConnectionState.none ||
@@ -691,11 +766,17 @@ class _shopsState extends State<shops> {
 }
 
 class profile extends StatefulWidget {
+  /**
+   * The profile widget displays all the information of the user.
+   * this is retrieved from the database.
+   */
   @override
   _profileState createState() => _profileState();
 }
 
 class _profileState extends State<profile> {
+
+  //Function to retrieve list of details 
   getDetails() async {
     List<Map> list = await db.rawQuery(
         """ select * from user, address where user_id = ${user_id}  """);
@@ -707,6 +788,7 @@ class _profileState extends State<profile> {
   Widget build(BuildContext context) {
     getDetails();
     return FutureBuilder(
+      //Futurebuilder to display user details
         future: getDetails(),
         builder: (context, projectSnap) {
           if (projectSnap.connectionState == ConnectionState.none &&
@@ -717,22 +799,27 @@ class _profileState extends State<profile> {
           }
           return Column(
             children: [
+              //Display username 
               ListTile(
                 title: Text("User Name"),
                 subtitle: Text(projectSnap.data[0]["username"]),
               ),
+              //Display user email information
               ListTile(
                 title: Text("Email"),
                 subtitle: Text(projectSnap.data[0]["email"]),
               ),
+              //Display user phone number
               ListTile(
                 title: Text("Phone Number"),
                 subtitle: Text(projectSnap.data[0]["phone"]),
               ),
+              //Display user location
               ListTile(
                 title: Text("Country"),
                 subtitle: Text(projectSnap.data[0]["country"]),
               ),
+              //Display user postal code
               ListTile(
                 title: Text("Postal Code"),
                 subtitle: Text(projectSnap.data[0]["postal_code"].toString()),
@@ -762,12 +849,19 @@ class detailpage extends StatefulWidget {
       this.total_amount});
   @override
   _detailpageState createState() => _detailpageState();
+
+  /**
+   * The detailspage widget displays detail information regarding the product, it will retrieve information
+   * from the database regarding the various products, including name, picture, rating, id, price and brand.
+   * It also include user comments. 
+   */
 }
 
 class _detailpageState extends State<detailpage> {
   List<Map> comments = [];
   TextEditingController comment = TextEditingController();
 
+  //Functions to retrieve the comments from the database.
   getComments() async {
     comments = await db.rawQuery(
         """ select * from comment where product_id = ${widget.id} and user_id = $user_id """);
@@ -780,6 +874,7 @@ class _detailpageState extends State<detailpage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    //Run function when app is first initialized.
     getComments();
   }
 
@@ -813,12 +908,14 @@ class _detailpageState extends State<detailpage> {
                     ),
                 onRatingUpdate: (rating) async {
                   double newrating = (widget.rate + rating) / 2;
+                  //Update product rating based on user rating
                   await db.rawUpdate(
                       """ update product set product_rate = ${newrating} where product_id = ${widget.id}""");
 
                   print(rating);
                 }),
             SizedBox(height: 15),
+            //Display all the details of the product
             Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4.0),
                 child: Container(
@@ -844,6 +941,7 @@ class _detailpageState extends State<detailpage> {
                         ]),
                       ),
                       SizedBox(height: 20),
+                      //Display product price
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 25.0),
                         child: Align(
@@ -856,6 +954,7 @@ class _detailpageState extends State<detailpage> {
                         ),
                       ),
                       SizedBox(height: 12),
+                      //Display amount in stock
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 25.0),
                         child: Align(
@@ -870,6 +969,7 @@ class _detailpageState extends State<detailpage> {
                         ),
                       ),
                       SizedBox(height: 15),
+                      //Display product brand
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 25.0),
                         child: Align(
@@ -887,6 +987,7 @@ class _detailpageState extends State<detailpage> {
                   ),
                 )),
             SizedBox(height: 40),
+            //Display Comments
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 19.0),
               child: Row(children: <Widget>[
@@ -901,15 +1002,19 @@ class _detailpageState extends State<detailpage> {
                 Expanded(child: Divider(thickness: 1.5)),
               ]),
             ),
+            //Futurebuilder that automatically update when there is new comments
             FutureBuilder(
                 future: getComments(),
                 builder: (context, projectSnap) {
+                  //Check if connection has data
                   if (projectSnap.connectionState == ConnectionState.none ||
                       projectSnap.hasData == null ||
                       projectSnap.connectionState == ConnectionState.waiting) {
                     //print('project snapshot data is: ${projectSnap.data}');
                     return CircularProgressIndicator();
                   }
+
+                  //Display user comments
                   return Container(
                     height: 200,
                     child: projectSnap.data.length != 0
@@ -957,6 +1062,7 @@ class _detailpageState extends State<detailpage> {
                     labelText: ' comment here'),
               ),
             ),
+            //Button that execute an insert to the database when pressed.
             FlatButton(
                 onPressed: () async {
                   await db.rawInsert(
@@ -982,7 +1088,12 @@ class searchpage extends StatefulWidget {
 }
 
 class _searchpageState extends State<searchpage> {
+  /**
+   * The searchpage state includes the search function, it will communicate with the database to execute read functions
+   */
   List<Map> result = [];
+
+  //Function to retrieve the result based on user input
   getresult() async {
     List<Map> aa;
     aa = await db.rawQuery(
@@ -992,6 +1103,7 @@ class _searchpageState extends State<searchpage> {
     });
   }
 
+  //Function to refresh the search function
   Future<bool> refresh() async {
     List<Map> aa;
     aa = await db.rawQuery(
@@ -1147,6 +1259,10 @@ class _searchpageState extends State<searchpage> {
 //====================================================== Categories List Shop ==============================
 
 class categoryList extends StatefulWidget {
+  /**
+   * The category List will list all the products based on user category selection from the database. 
+   * This will help users in choosing product based on the category of preference.
+   */
   int category_id;
   String category_name;
 
@@ -1161,6 +1277,8 @@ class categoryList extends StatefulWidget {
 
 class _categoryListState extends State<categoryList> {
   List<Map> productsByCategory = [];
+
+  // the function below is async and is used to fetch products based on their category.
   getproductsByCategory() async {
     productsByCategory = await db.rawQuery(
         """select * from product WHERE category_id = ${widget.category_id} """);
@@ -1216,6 +1334,7 @@ class _categoryListState extends State<categoryList> {
                                 tag: projectSnap.data[index]["product_id"],
                                 child: GestureDetector(
                                   onTap: () {
+                                    // Navigate to the list of product based on their category.
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
